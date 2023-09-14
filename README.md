@@ -1,8 +1,12 @@
-# Chatterbox-AI: Your Swaggable Assistant
+# Chatterbox-AI: Your Swagger Assistant
 
 ## Introduction
 
-Chatterbox-AI is a robust TypeScript library designed to work hand-in-hand with Swagger/OpenAPI documentation. It offers a seamless interface for your chat assistant to perform function calls directly mapped from a Swagger document. With Chatterbox-AI, you get to convert your Swagger-aided API into a potent chat capable of handling complex queries and interactions.
+Chatterbox is a robust TypeScript library designed to work hand-in-hand between Swagger/OpenAPI documentation and OpenAI Function Calling.
+It allows us to tag endpoints in our Swagger documentation and automatically map them to function calls in OpenAI. This allows us to
+create a chatbot that can automatically call our API endpoints.
+
+Chatterbox also handles the parsing of the generated response from OpenAI back into useful arguments or even a full API call.
 
 ## Installation
 
@@ -22,7 +26,7 @@ bun add chatterbox-ai
 
 ## Quick Start
 
-To use Chatterbox-AI, you'll need to import the package and instantiate it with specific tagNames.
+To use Chatterbox, you'll need to import the package and instantiate it with specific tags.
 
 Here's a simple example:
 
