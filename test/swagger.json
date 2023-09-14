@@ -1,0 +1,800 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "summary": "Ping!",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "operationId": "UserController_upsert",
+        "summary": "Get or create a user",
+        "description": "Get a user by their email address. If the user does not exist, create them. Allows for API Key authentication too.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    },
+                    "apiKey": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "createdAt",
+                    "apiKey",
+                    "email"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/chats": {
+      "post": {
+        "operationId": "ChatsController_create",
+        "summary": "Create a chat",
+        "description": "Create a new chat. Will return the chat and AI response with a new `chatId`",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "description": "The system message. This will tell the AI how to behave",
+                    "example": "You are an customer service chat bot. Never lie!"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The users message",
+                    "example": "How do I check my billing?"
+                  },
+                  "config": {
+                    "type": "object",
+                    "properties": {
+                      "model": {
+                        "type": "string",
+                        "example": "gpt-3.5-turbo-0613"
+                      },
+                      "temperature": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "max_tokens": {
+                        "type": "number",
+                        "example": 2000
+                      }
+                    }
+                  },
+                  "functionCalls": {
+                    "type": "array",
+                    "example": [
+                      "createArticle",
+                      "createMockPerson"
+                    ],
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "createArticle",
+                        "createMockPerson"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config": {
+                      "type": "object",
+                      "properties": {
+                        "model": {
+                          "type": "string",
+                          "example": "gpt-3.5-turbo-0613"
+                        },
+                        "temperature": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "max_tokens": {
+                          "type": "number",
+                          "example": 2000
+                        }
+                      }
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "chatId": {
+                      "type": "string"
+                    },
+                    "functionCalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "createArticle",
+                          "createMockPerson"
+                        ]
+                      }
+                    },
+                    "messages": {
+                      "example": [
+                        {
+                          "timestamp": 1633023032,
+                          "role": "system",
+                          "content": "System message content"
+                        },
+                        {
+                          "timestamp": 1633023033,
+                          "role": "user",
+                          "content": "User message content"
+                        },
+                        {
+                          "timestamp": 1633023034,
+                          "role": "function",
+                          "functionCall": {
+                            "functionName": "exampleFunction",
+                            "args": {
+                              "arg1": "value1",
+                              "arg2": "value2"
+                            }
+                          }
+                        },
+                        {
+                          "timestamp": 1633023035,
+                          "role": "assistant",
+                          "content": "Assistant message content"
+                        }
+                      ],
+                      "items": {
+                        "type": "array"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "name",
+                    "chatId",
+                    "functionCalls",
+                    "messages",
+                    "userId",
+                    "createdAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/chats/{chatId}": {
+      "post": {
+        "operationId": "ChatsController_append",
+        "summary": "Follow up on a chat",
+        "description": "Append a message to an existing chat's history. Requires a `chatId` and returns the updated chat with the AI response included.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "description": "The system message. This will tell the AI how to behave",
+                    "example": "You are an customer service chat bot. Never lie!"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The users message",
+                    "example": "How do I check my billing?"
+                  },
+                  "config": {
+                    "type": "object",
+                    "properties": {
+                      "model": {
+                        "type": "string",
+                        "example": "gpt-3.5-turbo-0613"
+                      },
+                      "temperature": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "max_tokens": {
+                        "type": "number",
+                        "example": 2000
+                      }
+                    }
+                  },
+                  "functionCalls": {
+                    "type": "array",
+                    "example": [
+                      "createArticle",
+                      "createMockPerson"
+                    ],
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "createArticle",
+                        "createMockPerson"
+                      ]
+                    }
+                  },
+                  "chatId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message",
+                  "chatId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config": {
+                      "type": "object",
+                      "properties": {
+                        "model": {
+                          "type": "string",
+                          "example": "gpt-3.5-turbo-0613"
+                        },
+                        "temperature": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "max_tokens": {
+                          "type": "number",
+                          "example": 2000
+                        }
+                      }
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "chatId": {
+                      "type": "string"
+                    },
+                    "functionCalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "createArticle",
+                          "createMockPerson"
+                        ]
+                      }
+                    },
+                    "messages": {
+                      "example": [
+                        {
+                          "timestamp": 1633023032,
+                          "role": "system",
+                          "content": "System message content"
+                        },
+                        {
+                          "timestamp": 1633023033,
+                          "role": "user",
+                          "content": "User message content"
+                        },
+                        {
+                          "timestamp": 1633023034,
+                          "role": "function",
+                          "functionCall": {
+                            "functionName": "exampleFunction",
+                            "args": {
+                              "arg1": "value1",
+                              "arg2": "value2"
+                            }
+                          }
+                        },
+                        {
+                          "timestamp": 1633023035,
+                          "role": "assistant",
+                          "content": "Assistant message content"
+                        }
+                      ],
+                      "items": {
+                        "type": "array"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "name",
+                    "chatId",
+                    "functionCalls",
+                    "messages",
+                    "userId",
+                    "createdAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "ChatsController_findOne",
+        "summary": "Get a chat by its chatId",
+        "description": "Get a chat and all of its contents by its `chatId`",
+        "parameters": [
+          {
+            "name": "chatId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config": {
+                      "type": "object",
+                      "properties": {
+                        "model": {
+                          "type": "string",
+                          "example": "gpt-3.5-turbo-0613"
+                        },
+                        "temperature": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "max_tokens": {
+                          "type": "number",
+                          "example": 2000
+                        }
+                      }
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "chatId": {
+                      "type": "string"
+                    },
+                    "functionCalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "createArticle",
+                          "createMockPerson"
+                        ]
+                      }
+                    },
+                    "messages": {
+                      "example": [
+                        {
+                          "timestamp": 1633023032,
+                          "role": "system",
+                          "content": "System message content"
+                        },
+                        {
+                          "timestamp": 1633023033,
+                          "role": "user",
+                          "content": "User message content"
+                        },
+                        {
+                          "timestamp": 1633023034,
+                          "role": "function",
+                          "functionCall": {
+                            "functionName": "exampleFunction",
+                            "args": {
+                              "arg1": "value1",
+                              "arg2": "value2"
+                            }
+                          }
+                        },
+                        {
+                          "timestamp": 1633023035,
+                          "role": "assistant",
+                          "content": "Assistant message content"
+                        }
+                      ],
+                      "items": {
+                        "type": "array"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "name",
+                    "chatId",
+                    "functionCalls",
+                    "messages",
+                    "userId",
+                    "createdAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Chat"
+        ],
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "apikey": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Chat UI Template",
+    "description": "API Documentation for Chat UI Template",
+    "version": "0.0.1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "apikey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      },
+      "jwt": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "apiKey": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "createdAt",
+          "apiKey",
+          "email"
+        ]
+      },
+      "ChatConfig": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-3.5-turbo-0613"
+          },
+          "temperature": {
+            "type": "number",
+            "example": 1
+          },
+          "max_tokens": {
+            "type": "number",
+            "example": 2000
+          }
+        }
+      },
+      "CreateChatParams": {
+        "type": "object",
+        "properties": {
+          "system": {
+            "type": "string",
+            "description": "The system message. This will tell the AI how to behave",
+            "example": "You are an customer service chat bot. Never lie!"
+          },
+          "message": {
+            "type": "string",
+            "description": "The users message",
+            "example": "How do I check my billing?"
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string",
+                "example": "gpt-3.5-turbo-0613"
+              },
+              "temperature": {
+                "type": "number",
+                "example": 1
+              },
+              "max_tokens": {
+                "type": "number",
+                "example": 2000
+              }
+            }
+          },
+          "functionCalls": {
+            "type": "array",
+            "example": [
+              "createArticle",
+              "createMockPerson"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "createArticle",
+                "createMockPerson"
+              ]
+            }
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ChatDto": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string",
+                "example": "gpt-3.5-turbo-0613"
+              },
+              "temperature": {
+                "type": "number",
+                "example": 1
+              },
+              "max_tokens": {
+                "type": "number",
+                "example": 2000
+              }
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "chatId": {
+            "type": "string"
+          },
+          "functionCalls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "createArticle",
+                "createMockPerson"
+              ]
+            }
+          },
+          "messages": {
+            "example": [
+              {
+                "timestamp": 1633023032,
+                "role": "system",
+                "content": "System message content"
+              },
+              {
+                "timestamp": 1633023033,
+                "role": "user",
+                "content": "User message content"
+              },
+              {
+                "timestamp": 1633023034,
+                "role": "function",
+                "functionCall": {
+                  "functionName": "exampleFunction",
+                  "args": {
+                    "arg1": "value1",
+                    "arg2": "value2"
+                  }
+                }
+              },
+              {
+                "timestamp": 1633023035,
+                "role": "assistant",
+                "content": "Assistant message content"
+              }
+            ],
+            "items": {
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "config",
+          "name",
+          "chatId",
+          "functionCalls",
+          "messages",
+          "userId",
+          "createdAt"
+        ]
+      },
+      "AppendChatParams": {
+        "type": "object",
+        "properties": {
+          "system": {
+            "type": "string",
+            "description": "The system message. This will tell the AI how to behave",
+            "example": "You are an customer service chat bot. Never lie!"
+          },
+          "message": {
+            "type": "string",
+            "description": "The users message",
+            "example": "How do I check my billing?"
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string",
+                "example": "gpt-3.5-turbo-0613"
+              },
+              "temperature": {
+                "type": "number",
+                "example": 1
+              },
+              "max_tokens": {
+                "type": "number",
+                "example": 2000
+              }
+            }
+          },
+          "functionCalls": {
+            "type": "array",
+            "example": [
+              "createArticle",
+              "createMockPerson"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "createArticle",
+                "createMockPerson"
+              ]
+            }
+          },
+          "chatId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "chatId"
+        ]
+      }
+    }
+  }
+}

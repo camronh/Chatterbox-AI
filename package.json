@@ -1,0 +1,28 @@
+{
+  "name": "chatterbox-ai",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "link": "tsc && npm link && npm link chatterbox-ai",
+    "prepublish": "npm run build",
+    "test": "mocha -r ts-node/register '**/*.spec.ts'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
+    "@types/swagger-schema-official": "^2.0.22",
+    "chai": "^4.3.8",
+    "mocha": "^10.2.0",
+    "openai": "^4.7.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
