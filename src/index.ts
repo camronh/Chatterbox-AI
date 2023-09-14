@@ -259,7 +259,8 @@ export default class Chatterbox {
 //   const { message } = result.choices[0];
 //   if (!message.function_call) return console.log(message);
 //   console.log({ message });
-//   const contract = chatterService.parseMessage(message);
+//   const { endpoint, method, path, payload } =
+//     chatterService.parseMessage(message);
 //   console.log(contract);
 //   const axiosRequest = chatterService.parseResponseToApiCall(message);
 //   console.log(axiosRequest);

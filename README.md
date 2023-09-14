@@ -30,8 +30,6 @@ Here's a simple example:
 import Chatterbox from "chatterbox-ai";
 
 const tagNames = ["Chat"];
-const baseUrl = "http://localhost:3000";
-const swaggerUrl = `${baseUrl}/api-docs-json`;
 
 const chatterbox = new Chatterbox(tagNames);
 ```
@@ -43,64 +41,70 @@ You can either fetch a Swagger document from a URL or load it from a local JSON 
 **Fetch Swagger Doc**
 
 ```typescript
+const swaggerUrl = `http://localhost:3000/api-docs-json`;
+
 await chatterbox.fetchDoc(swaggerUrl);
 ```
 
 **Load Swagger Doc Locally**
 
 ```typescript
-const swaggerDoc =
-  /* your swagger doc as JSON object */
-  await chatterbox.loadDoc(swaggerDoc);
+const swaggerDoc = document; /* your swagger doc as JSON object */
+await chatterbox.loadDoc(swaggerDoc);
 ```
 
-## Methods
+## Usage
 
-### `parseMessage(message: Message): ParsedMessage`
+### Function Calling
 
-Parses an incoming message object and converts it into a mapped API call.
-
-#### Example
+We can use the `functionCalls` in our OpenAI chat creation endpoint. We also have a `defaultSystemPrompt` that is a complementary
+prompt that fits well with API calls.
 
 ```typescript
-const mockFunctionCallMessage = {
-  role: "assistant",
-  content: null,
-  function_call: {
-    name: "Follow_up_on_a_chat",
-    arguments: `{"message": "it's my birthday","chatId": "55"}`,
-  },
-} as any;
-
-const parsedMessage = chatterbox.parseMessage(mockFunctionCallMessage);
+const result = await openai.chat.completions.create({
+  model: "gpt-4",
+  messages: [
+    {
+      role: "system",
+      content: chatterbox.defaultSystemPrompt,
+    },
+    {
+      role: "user",
+      content: "Can you create a new document for me please?",
+    },
+  ],
+  functions: chatterbox.functionCalls,
+});
 ```
 
-### `parseResponseToApiCall(message: Message): ApiResponse`
+### Parse the Generation
 
-Populates the required parameters to make an API call based on the parsed message.
+When parsing the generated response from OpenAI, we have 2 options. We can parse the arguments and just get the payload, or we can parse it directly
+to an API call, which will populate all of the fields and parameters for us.
 
-#### Example
+**Parse to Payload**
 
 ```typescript
-const apiResponse = chatterbox.parseResponseToApiCall(mockFunctionCallMessage);
+const { message } = result.choices[0];
+if (!message.function_call) continue;
+
+// Payload is the arguments for the function call
+// Endpoint is the OpenAPI path object
+// Method and Path are the endpoint's method and path as strings
+const { endpoint, method, path, payload } = chatterbox.parseMessage(message);
+
+// Pass the arguments to your functions
+await createDocument(payload);
 ```
 
-## Testing
+**Parse to API Call**
 
-Chatterbox-AI comes with an extensive testing suite to validate your Swagger document and make sure that your chat assistant is functioning correctly. You can find the test script in the `./test` directory.
+When we use `parseMessageToRequest`:
 
-## Contributing
+- Path params are automatically populated
+- The other parameters are populated as query params or body params depending on the method
 
-Feel free to submit issues and enhancement requests.
-
-## License
-
-MIT
-
----
-
-For more details, see the API documentation and examples on how to use specific features.
-
-## Changelog
-
-For recent changes, please see the CHANGELOG.md file.
+```typescript
+const req = chatterbox.parseMessageToRequest(message);
+const { data } = await axios(req);
+```
